@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欲望辨认量表 - 完整测试与分析系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #5d5fef;
+            --secondary-color: #8b5cf6;
+            --accent-color: #ec4899;
+            --light-color: #f8fafc;
+            --dark-color: #1e293b;
+            --gray-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f1f5f9;
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .question {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+            line-height: 1.5;
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .options {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        
+        .option input {
+            display: none;
+        }
+        
+        .option-label {
+            padding: 10px 15px;
+            background-color: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            text-align: center;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .option-label:hover {
+            background-color: #e2e8f0;
+        }
+        
+        .option input:checked + .option-label {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .option-text {
+            font-size: 0.8rem;
+            color: var(--gray-color);
+            text-align: center;
+        }
+        
+        .factor-info {
+            font-size: 0.85rem;
+            color: var(--gray-color);
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: var(--dark-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+        
+        .progress-container {
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: right;
+            font-size: 0.9rem;
+            color: var(--gray-color);
+            margin-bottom: 5px;
+        }
+        
+        .question-container {
+            display: none;
+        }
+        
+        .question-container.active {
+            display: block;
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .factor-score {
+            margin-bottom: 20px;
+        }
+        
+        .factor-name {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .factor-bar {
+            height: 10px;
+            background-color: #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .factor-progress {
+            height: 100%;
+            border-radius: 5px;
+        }
+        
+        .analysis-section {
+            margin-top: 30px;
+        }
+        
+        .analysis-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
+        .analysis-content {
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .type-indicator {
+            display: inline-block;
+            padding: 5px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .factor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .factor-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--primary-color);
+        }
+        
+        .factor-card h3 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .factor-card p {
+            color: var(--gray-color);
+            font-size: 0.9rem;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin: 30px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .options {
+                flex-direction: column;
+            }
+            
+            .option {
+                margin-bottom: 10px;
+            }
+            
+            .factor-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>欲望辨认量表</h1>
+            <p class="subtitle">探索你内心深处的欲望结构 - 基于心理学与哲学的深度分析</p>
+        </header>
+        
+        <div class="card instructions">
+            <h2>测试说明</h2>
+            <p>本量表包含80道题目，旨在帮助你辨认和理解内心深处的欲望结构。请根据你的真实感受和想法选择最符合的选项。</p>
+            <p><strong>评分标准：</strong></p>
+            <ul>
+                <li><strong>0分</strong> - 完全不同意</li>
+                <li><strong>1分</strong> - 基本不同意</li>
+                <li><strong>2分</strong> - 有点不同意</li>
+                <li><strong>3分</strong> - 有点同意</li>
+                <li><strong>4分</strong> - 基本同意</li>
+                <li><strong>5分</strong> - 完全同意</li>
+            </ul>
+            <p>请诚实作答，无需过多思考，选择第一时间浮现在你脑海中的答案。</p>
+            <button id="start-btn" class="btn-primary">开始测试</button>
+        </div>
+        
+        <div id="test-container" style="display: none;">
+            <div class="progress-container">
+                <div class="progress-text">进度: <span id="progress-text">0</span>/80</div>
+                <div class="progress-bar">
+                    <div class="progress" id="progress-bar"></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div id="questions-container">
+                    <!-- 问题将通过JavaScript动态生成 -->
+                </div>
+                
+                <div class="navigation">
+                    <button id="prev-btn" class="btn-secondary" disabled>上一题</button>
+                    <button id="next-btn" class="btn-primary">下一题</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="results" class="results">
+            <div class="card">
+                <h2>你的欲望结构分析</h2>
+                
+                <div class="factor-grid">
+                    <div class="factor-card">
+                        <h3>家庭欲望 (F1)</h3>
+                        <div class="factor-score">
+                            <div class="factor-name">
+                                <span>得分</span>
+                                <span id="f1-score">0</span>
+                            </div>
+                            <div class="factor-bar">
+                                <div class="factor-progress" id="f1-bar" style="width: 0%; background-color: #5d5fef;"></div>
+                            </div>
+                        </div>
+                        <p>行为和动机受家庭影响的程度</p>
+                    </div>
+                    
+                    <div class="factor-card">
+                        <h3>社会欲望 (F2)</h3>
+                        <div class="factor-score">
+                            <div class="factor-name">
+                                <span>得分</span>
+                                <span id="f2-score">0</span>
+                            </div>
+                            <div class="factor-bar">
+                                <div class="factor-progress" id="f2-bar" style="width: 0%; background-color: #8b5cf6;"></div>
+                            </div>
+                        </div>
+                        <p>行为和动机受社会或群体标准影响的程度</p>
+                    </div>
+                    
+                    <div class="factor-card">
+                        <h3>自我欲望 (F3)</h3>
+                        <div class="factor-score">
+                            <div class="factor-name">
+                                <span>得分</span>
+                                <span id="f3-score">0</span>
+                            </div>
+                            <div class="factor-bar">
+                                <div class="factor-progress" id="f3-bar" style="width: 0%; background-color: #ec4899;"></div>
+                            </div>
+                        </div>
+                        <p>内在兴趣、自由意志、自主行为动机的强度</p>
+                    </div>
+                    
+                    <div class="factor-card">
+                        <h3>分辨力 (F4)</h3>
+                        <div class="factor-score">
+                            <div class="factor-name">
+                                <span>得分</span>
+                                <span id="f4-score">0</span>
+                            </div>
+                            <div class="factor-bar">
+                                <div class="factor-progress" id="f4-bar" style="width: 0%; background-color: #10b981;"></div>
+                            </div>
+                        </div>
+                        <p>对自身欲望来源和冲突的反思能力</p>
+                    </div>
+                    
+                    <div class="factor-card">
+                        <h3>金钱动机 (F5)</h3>
+                        <div class="factor-score">
+                            <div class="factor-name">
+                                <span>得分</span>
+                                <span id="f5-score">0</span>
+                            </div>
+                            <div class="factor-bar">
+                                <div class="factor-progress" id="f5-bar" style="width: 0%; background-color: #f59e0b;"></div>
+                            </div>
+                        </div>
+                        <p>赚钱动机及其目的（自由/独立/他人认同）</p>
+                    </div>
+                    
+                    <div class="factor-card">
+                        <h3>独立意愿 (F6)</h3>
+                        <div class="factor-score">
+                            <div class="factor-name">
+                                <span>得分</span>
+                                <span id="f6-score">0</span>
+                            </div>
+                            <div class="factor-bar">
+                                <div class="factor-progress" id="f6-bar" style="width: 0%; background-color: #ef4444;"></div>
+                            </div>
+                        </div>
+                        <p>脱离外界束缚、追求自主选择的倾向</p>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="factor-chart"></canvas>
+                </div>
+                
+                <div class="analysis-section">
+                    <h3 class="analysis-title">哲学深度分析</h3>
+                    
+                    <div class="analysis-content">
+                        <div class="type-indicator" id="user-type">类型分析中...</div>
+                        <div id="philosophical-analysis">
+                            <p>基于您的回答，我们正在分析您的欲望结构...</p>
+                        </div>
+                    </div>
+                    
+                    <h3 class="analysis-title">成长建议</h3>
+                    
+                    <div class="analysis-content">
+                        <div id="recommendations">
+                            <p>根据您的欲望结构特点，我们正在为您生成个性化的成长建议...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="restart-btn" class="btn-primary">重新测试</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 问题数据 - 80个问题完整版
+        const questions = [
+            { text: "当社会期望与兴趣冲突时，我会犹豫不决。", factors: ["F2", "F4", "F6"] },
+            { text: "我会为了家庭感到安全或安心，而暂时放下自我兴趣。", factors: ["F1", "F3"] },
+            { text: "我能区分哪些欲望来自家庭、哪些来自社会、哪些是自己本心。", factors: ["F4"] },
+            { text: "我愿意冒险去追求自己兴趣，而不是迎合他人。", factors: ["F3", "F6"] },
+            { text: "我的经济努力部分来自想让家人认可自己的能力。", factors: ["F1", "F5"] },
+            { text: "我能意识到经济压力可能掩盖了真实欲望。", factors: ["F4", "F5"] },
+            { text: "我会为了不被落下而迎合社会趋势。", factors: ["F2", "F6"] },
+            { text: "我相信追求内心渴望才是幸福的关键。", factors: ["F3", "F6"] },
+            { text: "当我做决定时，我会先考虑家人是否会认同，而不是仅凭自己的想法。", factors: ["F1", "F3"] },
+            { text: "我会在意自己是否被群体接受或尊重。", factors: ["F2", "F4"] },
+            { text: "我的快乐主要来自自主选择，而非外部认可。", factors: ["F3", "F4"] },
+            { text: "我能察觉家庭或社会对欲望的隐性塑造。", factors: ["F4", "F1", "F2"] },
+            { text: "我想赚钱，不仅为了生活，也为了被社会看作成功。", factors: ["F2", "F5"] },
+            { text: "我会为了兴趣而忽略社会或家庭的评价。", factors: ["F3", "F6"] },
+            { text: "当家庭意见与我内心欲望冲突时，我常常感到困惑。", factors: ["F1", "F4"] },
+            { text: "我能辨别自己选择的真正动机，而非表面理由。", factors: ["F4", "F3"] },
+            { text: "我会因为家庭的期待而延迟追求个人兴趣。", factors: ["F1", "F3"] },
+            { text: "当同龄人比我更成功时，我会感到焦虑或不安。", factors: ["F2", "F4"] },
+            { text: "我会为自己的兴趣投入时间和资源，即使没有回报。", factors: ["F3", "F5"] },
+            { text: "我能容纳欲望间的冲突，而不盲从或压抑。", factors: ["F4", "F6"] },
+            { text: "我有时会放弃自己喜欢的事情，以避免让家人失望。", factors: ["F1", "F3"] },
+            { text: "我会做某些事，即使不喜欢，也为了获得社会认可。", factors: ["F2", "F3"] },
+            { text: "我喜欢独处，因为它让我更清楚感受自己的欲望。", factors: ["F3", "F6"] },
+            { text: "我能认识到社会比较对自己决策的潜在影响。", factors: ["F4", "F2"] },
+            { text: "我想通过努力赚钱，部分是为了提升社会地位。", factors: ["F2", "F5"] },
+            { text: "我会追求长期目标，即便短期不被认可或理解。", factors: ["F3", "F4"] },
+            { text: "我觉得家庭的幸福感与我的选择紧密相关。", factors: ["F1", "F3"] },
+            { text: "社会标准会影响我对'成功'的定义。", factors: ["F2", "F3"] },
+            { text: "我相信自己的直觉能引导正确选择。", factors: ["F3", "F4"] },
+            { text: "我能理解自己为什么会压抑某些欲望。", factors: ["F4", "F3"] },
+            { text: "即使不想，我也会为了家庭的期望去努力赚钱。", factors: ["F1", "F5"] },
+            { text: "我在意别人如何评价我的职业、收入或生活方式。", factors: ["F2", "F5"] },
+            { text: "我会选择职业或生活方式来体现自我，而非他人标准。", factors: ["F3", "F6"] },
+            { text: "我能分析哪些欲望带来长期满足，哪些只是暂时冲动。", factors: ["F4"] },
+            { text: "我会为了家人感到骄傲，而努力达到外界标准。", factors: ["F1", "F2", "F5"] },
+            { text: "我害怕被他人评判为失败或不够好。", factors: ["F2", "F4"] },
+            { text: "我觉得忠于内心比追求社会成功更重要。", factors: ["F3", "F6"] },
+            { text: "我能清楚看见自己在多重压力下的真实倾向。", factors: ["F4"] },
+            { text: "我有时感到自己的人生目标和家庭责任难以分开。", factors: ["F1", "F4"] },
+            { text: "我有时会模仿他人的成功方式，即使不完全符合我的愿望。", factors: ["F2", "F3"] },
+            { text: "我会为探索新可能而放弃安全或舒适。", factors: ["F3", "F6", "F5"] },
+            { text: "我会反思自己的经济追求是为了自由、责任还是认同。", factors: ["F4", "F5", "F6"] },
+            { text: "我会选择一条路径，部分是出于兴趣，部分是为了让家人放心。", factors: ["F1", "F3", "F6"] },
+            { text: "我会根据社会认可调整自己的行为，而非完全依内心。", factors: ["F2", "F3"] },
+            { text: "我能清楚区分自己想要的生活和外界期待的生活。", factors: ["F3", "F4"] },
+            { text: "我能意识到行为选择背后的多重动机。", factors: ["F4"] },
+            { text: "我想赚钱，有时主要是为了让家人安心，而不是自我实现。", factors: ["F1", "F5"] },
+            { text: "我有时会把社会认可当作行动的主要驱动力。", factors: ["F2", "F5"] },
+            { text: "即使没人看见，我也会做自己真正想做的事。", factors: ["F3"] },
+            { text: "当我冲动去做某件事时，我会反思它是我的愿望还是受他人影响。", factors: ["F4"] },
+            { text: "当家庭不赞同我的选择时，我会反复思考是否放弃。", factors: ["F1", "F4"] },
+            { text: "我在乎别人是否认为我做出了'正确选择'。", factors: ["F2"] },
+            { text: "我追求赚钱和经济独立，主要是为了自由，而非炫耀。", factors: ["F3", "F5", "F6"] },
+            { text: "我能分辨哪些赚钱动机来源于自我独立，哪些是外界期待。", factors: ["F4", "F5", "F6"] },
+            { text: "我常常在选择中权衡'自己的愿望'与'家庭的期待'。", factors: ["F1", "F4", "F6"] },
+            { text: "当社会价值观与兴趣冲突时，我会感到内心拉扯。", factors: ["F2", "F3", "F4"] },
+            { text: "我有时会坚持兴趣，而不考虑经济回报。", factors: ["F3", "F5"] },
+            { text: "当欲望冲突时，我会分析哪个对自己更重要。", factors: ["F4", "F6"] },
+            { text: "我的某些努力，是为了证明自己能满足家人的标准。", factors: ["F1", "F5"] },
+            { text: "我会选择行为方式以避免群体排斥，即便不符合内心。", factors: ["F2", "F3"] },
+            { text: "我希望生活方式能体现个人独特性。", factors: ["F3", "F6"] },
+            { text: "我能看到自己追求金钱、地位或自由之间的权衡。", factors: ["F4", "F5", "F6"] },
+            { text: "我在做职业或学习选择时，家庭意见会占据重要位置。", factors: ["F1"] },
+            { text: "我会感到必须符合社会成功标准才能安心。", factors: ["F2", "F5"] },
+            { text: "我会为了自由和自我实现而拒绝他人期待。", factors: ["F3", "F6"] },
+            { text: "我能意识到责任感与兴趣追求之间的张力。", factors: ["F4", "F1", "F3"] },
+            { text: "我有时会为了家庭的幸福感而压抑自己的想法。", factors: ["F1", "F3"] },
+            { text: "我有时会牺牲内心偏好，以满足社会的期望。", factors: ["F2", "F3"] },
+            { text: "我会优先考虑自己真正想要的，而非社会或家庭规定。", factors: ["F3", "F6"] },
+            { text: "我会区分短期冲动和长期目标的差别。", factors: ["F4"] },
+            { text: "当我考虑未来时，家庭的意见经常影响我的计划。", factors: ["F1", "F4"] },
+            { text: "我追求某些目标，部分是为了得到他人羡慕。", factors: ["F2", "F5"] },
+            { text: "我在做决定时，会先倾听自己的内心，而非外界意见。", factors: ["F3", "F4"] },
+            { text: "我能察觉自己在模仿他人欲望，而非自主选择。", factors: ["F4", "F2"] },
+            { text: "我会在家庭面前控制自己的表现，即使内心想法不同。", factors: ["F1", "F3"] },
+            { text: "即使追求自由，我有时仍会顾忌社会标准。", factors: ["F2", "F3", "F6"] },
+            { text: "我会分析自己的行为动机，以确保它符合内心价值。", factors: ["F3", "F4"] },
+            { text: "我能认识到自己为什么会压抑某些欲望。", factors: ["F4", "F3"] },
+            { text: "我会权衡家庭期望与自己的长期兴趣，难以完全取舍。", factors: ["F1", "F3", "F4"] },
+            { text: "我会反思是否为了他人认可而牺牲自己的兴趣。", factors: ["F4", "F3"] }
+        ];
+        
+        // 初始化变量
+        let currentQuestion = 0;
+        let answers = {};
+        let factorScores = {
+            "F1": 0,
+            "F2": 0,
+            "F3": 0,
+            "F4": 0,
+            "F5": 0,
+            "F6": 0
+        };
+        
+        // 因子出现次数统计
+        let factorCounts = {
+            "F1": 0,
+            "F2": 0,
+            "F3": 0,
+            "F4": 0,
+            "F5": 0,
+            "F6": 0
+        };
+        
+        // 计算因子出现次数
+        questions.forEach(question => {
+            question.factors.forEach(factor => {
+                factorCounts[factor]++;
+            });
+        });
+        
+        // DOM元素
+        const startBtn = document.getElementById('start-btn');
+        const testContainer = document.getElementById('test-container');
+        const resultsContainer = document.getElementById('results');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        // 生成问题HTML
+        function generateQuestions() {
+            const container = document.getElementById('questions-container');
+            
+            questions.forEach((question, index) => {
+                const questionNumber = index + 1;
+                const questionDiv = document.createElement('div');
+                questionDiv.id = `question-${questionNumber}`;
+                questionDiv.className = 'question-container';
+                if (index === 0) questionDiv.classList.add('active');
+                
+                questionDiv.innerHTML = `
+                    <div class="question-number">问题 ${questionNumber}</div>
+                    <div class="question">${questionNumber}. ${question.text}</div>
+                    <div class="options">
+                        ${[0, 1, 2, 3, 4, 5].map(score => `
+                            <div class="option">
+                                <input type="radio" id="q${questionNumber}-${score}" name="q${questionNumber}" value="${score}">
+                                <label class="option-label" for="q${questionNumber}-${score}">${score}</label>
+                                <div class="option-text">${getScoreText(score)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="factor-info">因子：${question.factors.join(', ')}</div>
+                `;
+                
+                container.appendChild(questionDiv);
+            });
+        }
+        
+        // 获取分数对应的文本
+        function getScoreText(score) {
+            const texts = [
+                "完全不同意",
+                "基本不同意",
+                "有点不同意",
+                "有点同意",
+                "基本同意",
+                "完全同意"
+            ];
+            return texts[score] || "";
+        }
+        
+        // 开始测试
+        startBtn.addEventListener('click', function() {
+            document.querySelector('.instructions').style.display = 'none';
+            testContainer.style.display = 'block';
+            updateProgress();
+        });
+        
+        // 更新进度
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${currentQuestion + 1}/${questions.length}`;
+            
+            // 更新按钮状态
+            prevBtn.disabled = currentQuestion === 0;
+            nextBtn.textContent = currentQuestion === questions.length - 1 ? '查看结果' : '下一题';
+        }
+        
+        // 显示特定问题
+        function showQuestion(index) {
+            document.querySelectorAll('.question-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            const questionContainer = document.getElementById(`question-${index + 1}`);
+            if (questionContainer) {
+                questionContainer.classList.add('active');
+            }
+            
+            updateProgress();
+        }
+        
+        // 保存答案
+        function saveAnswer() {
+            const currentQuestionId = `q${currentQuestion + 1}`;
+            const selectedOption = document.querySelector(`input[name="${currentQuestionId}"]:checked`);
+            
+            if (selectedOption) {
+                answers[currentQuestionId] = parseInt(selectedOption.value);
+            }
+        }
+        
+        // 下一题
+        nextBtn.addEventListener('click', function() {
+            // 保存当前答案
+            saveAnswer();
+            
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+            } else {
+                // 计算分数并显示结果
+                calculateScores();
+                showResults();
+            }
+        });
+        
+        // 上一题
+        prevBtn.addEventListener('click', function() {
+            saveAnswer();
+            
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+            }
+        });
+        
+        // 计算分数
+        function calculateScores() {
+            // 重置分数
+            for (let factor in factorScores) {
+                factorScores[factor] = 0;
+            }
+            
+            // 计算每个因子的总分
+            for (let i = 0; i < questions.length; i++) {
+                const questionId = `q${i + 1}`;
+                const answer = answers[questionId] || 0;
+                const factors = questions[i].factors;
+                
+                factors.forEach(factor => {
+                    factorScores[factor] += answer;
+                });
+            }
+            
+            // 计算每个因子的平均分
+            for (let factor in factorScores) {
+                factorScores[factor] = (factorScores[factor] / factorCounts[factor]).toFixed(2);
+            }
+        }
+        
+        // 显示结果
+        function showResults() {
+            testContainer.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            
+            // 更新分数显示
+            for (let factor in factorScores) {
+                const scoreElement = document.getElementById(`${factor.toLowerCase()}-score`);
+                const barElement = document.getElementById(`${factor.toLowerCase()}-bar`);
+                
+                if (scoreElement && barElement) {
+                    scoreElement.textContent = factorScores[factor];
+                    barElement.style.width = `${(factorScores[factor] / 5) * 100}%`;
+                }
+            }
+            
+            // 生成图表
+            generateChart();
+            
+            // 生成分析结果
+            generateAnalysis();
+        }
+        
+        // 生成图表
+        function generateChart() {
+            const ctx = document.getElementById('factor-chart').getContext('2d');
+            
+            // 准备图表数据
+            const labels = ['家庭欲望', '社会欲望', '自我欲望', '分辨力', '金钱动机', '独立意愿'];
+            const data = [
+                parseFloat(factorScores.F1),
+                parseFloat(factorScores.F2),
+                parseFloat(factorScores.F3),
+                parseFloat(factorScores.F4),
+                parseFloat(factorScores.F5),
+                parseFloat(factorScores.F6)
+            ];
+            
+            // 创建雷达图
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '因子得分',
+                        data: data,
+                        backgroundColor: 'rgba(93, 95, 239, 0.2)',
+                        borderColor: 'rgba(93, 95, 239, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(93, 95, 239, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(93, 95, 239, 1)'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 生成分析结果
+        function generateAnalysis() {
+            const userTypeElement = document.getElementById('user-type');
+            const analysisElement = document.getElementById('philosophical-analysis');
+            const recommendationsElement = document.getElementById('recommendations');
+            
+            // 计算各因子得分
+            const f1Score = parseFloat(factorScores.F1);
+            const f2Score = parseFloat(factorScores.F2);
+            const f3Score = parseFloat(factorScores.F3);
+            const f4Score = parseFloat(factorScores.F4);
+            const f5Score = parseFloat(factorScores.F5);
+            const f6Score = parseFloat(factorScores.F6);
+            
+            // 确定用户类型
+            let userType = "";
+            let analysis = "";
+            let recommendations = "";
+            
+            // 本真的超人 (F3、F6高，F4高，F1、F2低)
+            if (f3Score > 3.5 && f6Score > 3.5 && f4Score > 3 && f1Score < 2.5 && f2Score < 2.5) {
+                userType = "本真的超人";
+                analysis = `
+                    <p>您体现了尼采'超人'的某些特质：能够重估一切价值，用自己的尺度衡量世界。您的欲望不是对匮乏的补偿，而是充盈生命的溢出。</p>
+                    <p>从存在主义视角看，您在一定程度上实现了从'常人之在'向'本真能在'的跃迁。您清醒地意识到自身的'被抛境遇'，但并不因此沉沦于日常生活，而是勇敢地承担起'此在'的筹划本性。</p>
+                    <p>您的精神结构具有强大的主体性内核，能够扭曲和重构外部世界的'现实扭曲力场'。在拉康的视角下，您或许在一定程度上穿越了'他者欲望的幻想'，认识到大他者也是欠缺的，从而不再纯粹通过他者的欲望来构建自己的欲望。</p>
+                `;
+                recommendations = `
+                    <h4>哲学实践建议：</h4>
+                    <ul>
+                        <li><strong>践行'关怀自身'的伦理</strong>：借鉴福柯晚期的思想，将您强大的自主性不仅用于对外部世界的筹划，更用于对'自我'的精巧创造。</li>
+                        <li><strong>拥抱'辩证'的智慧</strong>：在黑格尔的意义上，尝试将您强大的'主观精神'与'客观精神'进行一场综合。</li>
+                        <li><strong>培养'同理的想象力'</strong>：在坚持自身尺度的同时，尝试理解那些沉沦于'常人'世界之人的处境与无奈。</li>
+                    </ul>
+                `;
+            }
+            // 规训的常人 (F1、F2高，F3、F4低)
+            else if (f1Score > 3.5 && f2Score > 3.5 && f3Score < 2.5 && f4Score < 2.5) {
+                userType = "规训的常人";
+                analysis = `
+                    <p>您是海德格尔所深刻描绘的'非本真存在'的典型样本。您生活在'常人'的支配之下——'常人'规定着您的喜怒哀乐、成功与失败。</p>
+                    <p>从福柯的视角看，您是一具完美的'温顺的身体'。现代社会无所不在的'规训权力'，通过一套精密的'微观权力技术'塑造了您的灵魂，并让您将这种外部的规范内化为自身的真理。</p>
+                    <p>您的精神世界由一个高度发达的超我所主导。这个超我不是弗洛伊德意义上那个压抑的、代表父亲的超我，而是一个由社会规范、家族期待、同辈压力共同构成的、弥散性的'大他者'超我。</p>
+                `;
+                recommendations = `
+                    <h4>哲学实践建议：</h4>
+                    <ul>
+                        <li><strong>启动'现象学悬置'</strong>：尝试胡塞尔的现象学方法，在日常生活中，选择一件您认为'理所当然'应该去做的事，然后尝试将它'加上括号'，悬置对它的所有既有判断。</li>
+                        <li><strong>进行'谱系学考古'</strong>：效仿福柯和尼采，对您内心某个最强烈的欲望进行一次考古。</li>
+                        <li><strong>实践'微小的越轨'</strong>：在安全的范围内，有意识地做一些'毫无用处'、不为任何外部标准、仅仅为了自己愉悦的小事。</li>
+                    </ul>
+                `;
+            }
+            // 辩证的智者 (各因子相对平衡，F4突出)
+            else if (
+                Math.abs(f1Score - 3) < 0.8 && 
+                Math.abs(f2Score - 3) < 0.8 && 
+                Math.abs(f3Score - 3) < 0.8 && 
+                f4Score > 3.5 &&
+                Math.abs(f5Score - 3) < 1 && 
+                Math.abs(f6Score - 3) < 1
+            ) {
+                userType = "辩证的智者";
+                analysis = `
+                    <p>您是一位'居间'的大师。您的智慧不在于选择一端而否定另一端，而在于有能力持守在那个充满张力的'之间'地带。</p>
+                    <p>在黑格尔看来，您实践着一种'具体的普遍性'——您不是通过抽象地排斥特殊性（家庭、社会的要求）来达到普遍（自我实现），而是将特殊性作为环节吸纳进来，在更高的层面上实现一种包含着差异的统一。</p>
+                    <p>您体现了亚里士多德的'中道'智慧，但您的'中道'不是僵死的平均数，而是一个动态平衡的、需要极高判断力的'恰到好处'。</p>
+                `;
+                recommendations = `
+                    <h4>哲学实践建议：</h4>
+                    <ul>
+                        <li><strong>培养'决断的勇气'</strong>：借鉴海德格尔和克尔凯郭尔的思想，有意识地在某些时刻，练习'跃入'选择。</li>
+                        <li><strong>探索'有偏见的爱'</strong>：允许自己对生命中的某些价值、某些关系、某些事业，产生一种'不平衡'的、专注的爱。</li>
+                        <li><strong>实践'情境伦理'</strong>：将您的辩证智慧，从寻找'普遍正确'的方案，转向为每一个独特的'情境'寻找'恰到好处'的回应。</li>
+                    </ul>
+                `;
+            }
+            // 分裂的现代人 (各因子冲突明显)
+            else if (
+                (f1Score > 3 && f2Score > 3 && f3Score > 3) ||
+                (f1Score < 2 && f2Score < 2 && f3Score > 3.5) ||
+                (f1Score > 3.5 && f2Score < 2 && f3Score < 2)
+            ) {
+                userType = "分裂的现代人";
+                analysis = `
+                    <p>您是现代性核心困境的活生生的体现。您的内心战场，正是马克斯·韦伯所诊断的'诸神之争'的微观宇宙。</p>
+                    <p>在弗洛伊德的模型中，您是本我（原始欲望）、自我（现实原则）、超我（道德良心）之间激烈战争的战场。但在您这里，战争更加复杂：您的超我本身就是一个分裂的议会，来自父母的、来自社群的、来自抽象理想的声音在里面争吵不休。</p>
+                    <p>从拉康的视角看，您的困境在于，您同时被多个'大他者'所召唤和撕裂。家庭的大他者、社会的大他者、以及那个鼓吹'做你自己'的现代个人主义大他者，都在向您索取承认。</p>
+                `;
+                recommendations = `
+                    <h4>哲学实践建议：</h4>
+                    <ul>
+                        <li><strong>从'解决'转向'涵容'</strong>：您的首要任务，或许不是找到一个一劳永逸的'解决方案'来消除冲突，而是练习'觉察而不评判'地观察您内心的各种声音。</li>
+                        <li><strong>进行'欲望的书写'</strong>：借鉴德勒兹的哲学，将您的内心冲突外在化。</li>
+                        <li><strong>拥抱'成为'的旅程</strong>：放弃对'一个凝固、统一自我'的执着。您的分裂性，或许正是您生命力的体现。</li>
+                    </ul>
+                `;
+            }
+            // 其他类型 - 根据最高分判断
+            else {
+                const maxScore = Math.max(f1Score, f2Score, f3Score, f4Score, f5Score, f6Score);
+                
+                if (maxScore === f1Score) {
+                    userType = "家庭导向型";
+                    analysis = `<p>您的欲望结构主要由家庭因素主导，家庭价值观和期望在您的决策过程中起着核心作用。</p>`;
+                } else if (maxScore === f2Score) {
+                    userType = "社会导向型";
+                    analysis = `<p>您的欲望结构主要由社会因素塑造，外部认可和社会标准在您的决策中占据重要地位。</p>`;
+                } else if (maxScore === f3Score) {
+                    userType = "自我导向型";
+                    analysis = `<p>您的欲望结构主要由内在兴趣和个人价值观驱动，自主性和自我实现是您的重要动机。</p>`;
+                } else {
+                    userType = "平衡发展型";
+                    analysis = `<p>您的欲望结构相对平衡，没有明显的主导因素，能够在不同需求间找到动态平衡。</p>`;
+                }
+                
+                recommendations = `
+                    <h4>个性化建议：</h4>
+                    <ul>
+                        <li>继续发展您的自我觉察能力，特别是对欲望来源的反思</li>
+                        <li>尝试在不同生活领域实践更加有意识的决策</li>
+                        <li>定期反思您的价值观和优先级，确保它们与您的行动一致</li>
+                    </ul>
+                `;
+            }
+            
+            userTypeElement.textContent = userType;
+            analysisElement.innerHTML = analysis;
+            recommendationsElement.innerHTML = recommendations;
+        }
+        
+        // 重新测试
+        restartBtn.addEventListener('click', function() {
+            currentQuestion = 0;
+            answers = {};
+            factorScores = {
+                "F1": 0,
+                "F2": 0,
+                "F3": 0,
+                "F4": 0,
+                "F5": 0,
+                "F6": 0
+            };
+            
+            resultsContainer.style.display = 'none';
+            document.querySelector('.instructions').style.display = 'block';
+            
+            // 重置所有选择的答案
+            const allInputs = document.querySelectorAll('input[type="radio"]');
+            allInputs.forEach(input => {
+                input.checked = false;
+            });
+            
+            // 重新显示第一题
+            showQuestion(0);
+        });
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            generateQuestions();
+            showQuestion(0);
+        });
+    </script>
+</body>
+</html>
